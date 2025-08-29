@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>网络聊天室</title>
+    <style>
+        /* 全局样式 */
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
+            background-blend-mode: multiply;
+            background-color: rgba(0, 0, 0, 0.3); /* 半透明遮罩增强文字可读性 */
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* 输入框容器 */
+        #text, #btn {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 25px;
+            border: 2px solid #4CAF50;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 文本输入框 */
+        #text {
+            width: 400px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 发送按钮 */
+        #btn {
+            width: 100px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #btn:active {
+            transform: translateY(0);
+        }
+
+        /* 消息窗口 */
+        #message {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            border: 2px solid #4CAF50 !important;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 滚动条美化 */
+        #message::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #message::-webkit-scrollbar-track {
+            background: rgba(200, 200, 200, 0.3);
+            border-radius: 4px;
+        }
+
+        #message::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
+        }
+
+        /* 消息气泡基础样式（可根据实际消息内容添加class） */
+        .message {
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            background: #f1f1f1;
+            max-width: 80%;
+            word-break: break-word;
+        }
+
+    </style>
+    <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript">
+        var websocket = null;
+        var local = window.location;
+        var url = "ws://"+local.host+"/chatroom";
+        if("WebSocket" in window){
+            websocket = new WebSocket(url);
+        }else{
+            alert("该浏览器不支持WebSocket");
+        }
+
+        websocket.onopen = function (event) {
+            setMessageInnerHTML("连接成功");
+        }
+
+        websocket.onmessage = function (event) {
+            setMessageInnerHTML(event.data);
+        }
+
+        websocket.onclose = function (event) {
+            setMessageInnerHTML("连接已关闭");
+        }
+
+        websocket.onerror = function (event) {
+            setMessageInnerHTML("连接发生错误");
+            window.close();
+        }
+
+        window.onbeforeunload = function (){
+            websocket.close();
+        }
+
+        function setMessageInnerHTML(innerHTML){
+            $("#message").append(innerHTML+"<br>");
+            $("#message").scrollTop($("message")[0].scrollHeight);
+        }
+
+        function send(){
+            var message = $("#text").val();
+            websocket.send(message);
+        }
+
+        $(
+            function (){
+                $("#btn").click(
+                    function (){
+                        send();
+                    }
+                );
+            }
+        )
+
+
+
+    </script>
+</head>
+<body>
+    <input type="text" id="text">
+    <input type="button" id="btn" value="发送">
+    <br>
+    <div id="message" style="height:300px;width: 500px;border:1px solid red;overflow-y:auto"></div>
+</body>
+</html>
